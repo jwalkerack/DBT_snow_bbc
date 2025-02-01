@@ -1,0 +1,44 @@
+version: 2
+
+sources:
+  - name: raw_match
+    database: TEST_BBC # Hardcoded database name
+    schema: RAW_MATCH # Hardcoded schema name
+    tables:
+      - name: json_load_raw
+        description: "Raw JSON data loaded from external sources"
+      - name: match_results
+        description: "Flattened match details extracted from JSON"
+        columns:
+          - name: MATCH_ID
+            description: "Unique Match Identifier"
+          - name: HOME_TEAM_NAME
+            description: "Home team name"
+          - name: HOME_TEAM_MANAGER
+            description: "Home team manager"
+          - name: HOME_TEAM_FORMATION
+            description: "Home team formation"
+          - name: HOME_TEAM_SCORE
+            description: "Home team score"
+          - name: HOME_TEAM_POSSESSION
+            description: "Home team possession percentage"
+          - name: AWAY_TEAM_NAME
+            description: "Away team name"
+          - name: AWAY_TEAM_MANAGER
+            description: "Away team manager"
+          - name: AWAY_TEAM_FORMATION
+            description: "Away team formation"
+          - name: AWAY_TEAM_SCORE
+            description: "Away team score"
+          - name: AWAY_TEAM_POSSESSION
+            description: "Away team possession percentage"
+          - name: WAS_GAME_POSTPONED
+            description: "Indicates if the match was postponed"
+          - name: PLAYED_ON
+            description: "Date the match was played"
+          - name: LEAGUE_NAME
+            description: "League name"
+          - name: VENUE
+            description: "Match venue"
+          - name: ATTENDANCE
+            description: "Match attendance count"
