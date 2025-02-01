@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: dim_managers
+    description: "Dimension table for football team managers."
+    columns:
+      - name: manager_id
+        description: "Surrogate key for managers."
+        tests:
+          - unique
+          - not_null
+      - name: manager_name
+        description: "Cleaned-up name of the manager."
+  - name: dim_teams
+    description: "Dimension table for teams with league details."
+    columns:
+      - name: team_id
+        description: "Surrogate key for teams."
+        tests:
+          - unique
+          - not_null
+      - name: team_name
+        description: "Full name of the team."
+      - name: league_name
+        description: "Full name of the league."
+      - name: country_name
+        description: "Extracted first word of the league name (country)."
+      - name: short_name
+        description: "Remaining part of the league name."
+  - name: dim_venues
+    description: "Dimension table for football venues."
+    columns:
+      - name: venue_id
+        description: "Surrogate key for venues."
+        tests:
+          - unique
+          - not_null
+      - name: venue_name
+        description: "Full name of the venue."
+      - name: capacity
+        description: "Seating capacity of the venue (nullable for now)."
+      - name: metoffice
+        description: "MetOffice location identifier (nullable for now)."
+  - name: dim_players
+    description: "Dimension table for players."
+    columns:
+      - name: player_id
+        description: "Surrogate key for players."
+        tests:
+          - unique
+          - not_null
+      - name: player_key
+        description: "Composite key using player name and team name."
+      - name: player_name
+        description: "Player's full name."
+      - name: team_name
+        description: "Team the player belongs to."
+      - name: team_number
+        description: "Player's shirt number."

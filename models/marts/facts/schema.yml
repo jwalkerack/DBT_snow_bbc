@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: fact_player_performance
+    description: "Fact table tracking player performance per match."
+    columns:
+      - name: player_performance_id
+        description: "Surrogate key for player performance."
+        tests:
+          - unique
+          - not_null
+      - name: player_id
+        description: "Foreign key to dim_players."
+        tests:
+          - relationships:
+              to: ref('dim_players')
+              field: player_id
+      - name: match_id
+        description: "Foreign key to fact_match."
+        tests:
+          - relationships:
+              to: ref('fact_match')
+              field: match_id
+      - name: team_id
+        description: "Foreign key to dim_teams."
+        tests:
+          - relationships:
+              to: ref('dim_teams')
+              field: team_id
+      - name: minutes_played
+        description: "Total minutes played by the player in the match."
+      - name: yellow_cards
+        description: "Total yellow cards received."
+      - name: red_cards
+        description: "Total red cards received."
+      - name: goals
+        description: "Total goals scored."
+      - name: assists
+        description: "Total assists made."
+      - name: started_game
+        description: "Indicates if the player started the game."
+      - name: was_subbed
+        description: "Indicates if the player was substituted."
+  - name: fact_match
+    description: "Fact table storing match details."
+    columns:
+      - name: match_id
+        description: "Surrogate key for match."
+        tests:
+          - unique
+          - not_null
+      - name: bbcmatch_key
+        description: "BBC business key."
+      - name: played_on
+        description: "Date the match was played."
+      - name: home_team_id
+        description: "Foreign key referencing dim_teams (home team)."
+        tests:
+          - relationships:
+              to: ref('dim_teams')
+              field: team_id
+      - name: home_team_score
+        description: "Goals scored by the home team."
+      - name: home_team_possession
+        description: "Possession percentage for the home team."
+      - name: home_team_formation
+        description: "Formation used by the home team."
+      - name: away_team_id
+        description: "Foreign key referencing dim_teams (away team)."
+        tests:
+          - relationships:
+              to: ref('dim_teams')
+              field: team_id
+      - name: away_team_score
+        description: "Goals scored by the away team."
+      - name: away_team_possession
+        description: "Possession percentage for the away team."
+      - name: away_team_formation
+        description: "Formation used by the away team."
+      - name: venue_id
+        description: "Foreign key referencing dim_venues."
+        tests:
+          - relationships:
+              to: ref('dim_venues')
+              field: venue_id
+      - name: total_goals
+        description: "Total goals scored in the match."
+      - name: attendance
+        description: "Number of attendees at the match."
+      - name: was_game_postponed
+        description: "Boolean indicating if the game was postponed."
+      - name: outcome
+        description: "Match outcome (Home, Away, Draw)."
+      - name: league_name
+        description: "League in which the match was played."
