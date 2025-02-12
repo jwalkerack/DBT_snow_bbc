@@ -1,9 +1,9 @@
 WITH match_data AS (
     SELECT 
-        match_json.key::STRING AS MATCH_ID, 
+        match_json.value:match_id::STRING AS match_id, 
         match_json.value AS match_value
-    FROM {{ source('raw_match', 'json_load_raw') }},
-    LATERAL FLATTEN(input => json_data) AS match_json
+    FROM {{ source('raw_match', 'football_data_json') }},
+    LATERAL FLATTEN(input => GAMES_JSON) AS match_json
 ),
 
 team_data AS (
