@@ -1,117 +1,142 @@
 version: 2
 
 models:
-  - name: team_aggregates
-    description: "Aggregated team performance metrics."
+  - name: agg_league
+    description: >
+      This aggregate table summarizes team performance across all matches. 
+      It includes overall statistics, home and away breakdowns, and total points 
+      for each team within their respective leagues.
+
     columns:
-      - name: team_id
-        description: "Foreign key referencing dim_teams."
+      - name: TEAM_ID
+        description: "Unique identifier for the team, linked to `dim_teams`."
         tests:
+          - not_null
           - relationships:
               to: ref('dim_teams')
-              field: team_id
-      - name: team_name
-        description: "Team name."
-      - name: league_name
-        description: "League the team belongs to."
-      - name: total_games
-        description: "Total games played by the team."
-      - name: wins
-        description: "Total games won by the team."
-      - name: losses
-        description: "Total games lost by the team."
-      - name: draws
-        description: "Total games drawn by the team."
-      - name: played_at_home
-        description: "Total games played at home."
-      - name: won_at_home
-        description: "Total home wins."
-      - name: lost_at_home
-        description: "Total home losses."
-      - name: drawn_games_at_home
-        description: "Total home draws."
-      - name: average_home_possession
-        description: "Average possession when playing at home."
-      - name: avg_home_goals_scored
-        description: "Average goals scored at home."
-      - name: avg_home_goals_conceded
-        description: "Average goals conceded at home."
-      - name: played_at_away
-        description: "Total games played away."
-      - name: won_at_away
-        description: "Total away wins."
-      - name: lost_at_away
-        description: "Total away losses."
-      - name: drawn_games_at_away
-        description: "Total away draws."
-      - name: average_away_possession
-        description: "Average possession when playing away."
-      - name: avg_away_goals_scored
-        description: "Average goals scored away."
-      - name: avg_away_goals_conceded
-        description: "Average goals conceded away."
-  - name: player_aggregates
-    description: "Aggregated player performance metrics."
-    columns:
-      - name: player_id
-        description: "Foreign key to dim_players."
+              field: TEAM_ID
+
+      - name: TEAM_NAME
+        description: "Full name of the team."
         tests:
-          - relationships:
-              to: ref('dim_players')
-              field: player_id
-      - name: team_id
-        description: "Foreign key to dim_teams."
+          - not_null
+
+      - name: Formal_League_Name
+        description: "The official name of the league : English Premiership."
         tests:
-          - relationships:
-              to: ref('dim_teams')
-              field: team_id
-      - name: total_games_played
-        description: "Total games played by the player."
-      - name: total_games_started
-        description: "Total games started by the player."
-      - name: total_minutes
-        description: "Total minutes played by the player."
-      - name: total_goals
-        description: "Total goals scored by the player."
-      - name: total_assists
-        description: "Total assists by the player."
-      - name: minutes_per_goal
-        description: "Average minutes per goal scored."
-      - name: total_games_home
-        description: "Total games played at home."
-      - name: total_games_away
-        description: "Total games played away."
-models:
-  - name: manager_performance
-    description: "Performance statistics for football managers."
-    columns:
-      - name: manager_id
-        description: "Surrogate key for managers."
+          - not_null
+
+      - name: COUNTRY_NAME
+        description: "The country associated with the team's league."
         tests:
-          - relationships:
-              to: ref('dim_managers')
-              field: manager_id
-      - name: manager_name
-        description: "Manager's full name."
-      - name: team_name
-        description: "Team the manager is associated with."
-      - name: league_name
-        description: "League where the manager's team competes."
-      - name: total_games_played
-        description: "Total games managed."
-      - name: total_games_won
-        description: "Total games won by the manager."
-      - name: total_games_drawn
-        description: "Total games drawn."
-      - name: total_games_lost
-        description: "Total games lost."
-      - name: pct_total_games_won
-        description: "Percentage of games won."
-      - name: pct_total_games_drawn
-        description: "Percentage of games drawn."
-      - name: pct_total_games_lost
-        description: "Percentage of games lost."
-      - name: avg_goals_scored_per_game
-        description: "Average goals scored per match."
-      - name: avg_goals_conceded_per_game
-        description: "Average goals conceded per match."
+          - not_null
+
+      - name: short_League_Name
+        description: "The abbreviated version of the league name:  Premiership "
+        tests:
+          - not_null
+
+      - name: GamesPlayed
+        description: "Total number of matches played by the team."
+        tests:
+          - not_null
+
+      - name: TotalPoints
+        description: "Total points accumulated by the team (3 for a win, 1 for a draw, 0 for a loss)."
+        tests:
+          - not_null
+
+      - name: Wins
+        description: "Total matches won by the team."
+        tests:
+          - not_null
+
+      - name: Losses
+        description: "Total matches lost by the team."
+        tests:
+          - not_null
+
+      - name: Draws
+        description: "Total matches drawn by the team."
+        tests:
+          - not_null
+
+      - name: TotalScored
+        description: "Total goals scored by the team."
+        tests:
+          - not_null
+
+      - name: TotalConceded
+        description: "Total goals conceded by the team."
+        tests:
+          - not_null
+
+      - name: HomeGamesPlayed
+        description: "Total number of home matches played by the team."
+        tests:
+          - not_null
+
+      - name: HomeWins
+        description: "Total number of home matches won by the team."
+        tests:
+          - not_null
+
+      - name: HomeLosses
+        description: "Total number of home matches lost by the team."
+        tests:
+          - not_null
+
+      - name: HomeDraws
+        description: "Total number of home matches drawn by the team."
+        tests:
+          - not_null
+
+      - name: HomeScored
+        description: "Total goals scored by the team in home matches."
+        tests:
+          - not_null
+
+      - name: HomeConceded
+        description: "Total goals conceded by the team in home matches."
+        tests:
+          - not_null
+
+      - name: HomePoints
+        description: "Total points earned in home matches."
+        tests:
+          - not_null
+
+      - name: AwayGamesPlayed
+        description: "Total number of away matches played by the team."
+        tests:
+          - not_null
+
+      - name: AwayWins
+        description: "Total number of away matches won by the team."
+        tests:
+          - not_null
+
+      - name: AwayLosses
+        description: "Total number of away matches lost by the team."
+        tests:
+          - not_null
+
+      - name: AwayDraws
+        description: "Total number of away matches drawn by the team."
+        tests:
+          - not_null
+
+      - name: AwayScored
+        description: "Total goals scored by the team in away matches."
+        tests:
+          - not_null
+
+      - name: AwayConceded
+        description: "Total goals conceded by the team in away matches."
+        tests:
+          - not_null
+
+      - name: AwayPoints
+        description: "Total points earned in away matches."
+        tests:
+          - not_null
