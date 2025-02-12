@@ -1,20 +1,25 @@
 WITH match_data AS (
     SELECT 
-        match_json.key::STRING AS MATCH_ID, 
+        match_json.value:match_id::STRING AS match_id, 
         match_json.value AS match_value
-    FROM {{ source('raw_match', 'json_load_raw') }},
-    LATERAL FLATTEN(input => json_data) AS match_json
+    FROM {{ source('raw_match', 'football_data_json') }},
+    LATERAL FLATTEN(input => GAMES_JSON) AS match_json
 ),
 
 home_players AS (
     SELECT
         player.key::STRING AS PLAYER_NAME,
         m.MATCH_ID,
+
         m.match_value:home_team.name::STRING AS TEAM_NAME,
-        TRY_CAST(player.value:ShirtNumber::STRING AS FLOAT) AS TEAM_NUMBER,
-        TRY_CAST(player.value:StartedGame::STRING AS BOOLEAN) AS STARTED_GAME,
+        player.value:ShirtNumber::STRING AS TEAM_NUMBER,
+        CAST(REPLACE(player.value:ShirtNumber, ',', '') AS INT) AS TEAM_NUMBER1,
+        TRY_CAST(player.value:WasStarter::STRING AS BOOLEAN) AS STARTED_GAME,
         TRY_CAST(player.value:WasSubstituted::STRING AS BOOLEAN) AS WAS_SUBSTITUTED,
+        TRY_CAST(player.value:WasIntroduced::STRING AS BOOLEAN) AS Was_Introduced,
+        TRY_CAST(player.value:is_captain::STRING AS BOOLEAN) AS is_captain,
         player.value:ReplacedBy::STRING AS REPLACED_BY,
+        player.value:SubstitutionTime::STRING AS SubstitutionTime,
         TRY_CAST(player.value:YellowCards::STRING AS STRING) AS YELLOW_CARDS,
         CASE 
             WHEN IS_ARRAY(player.value:YellowCardMinutes) 
@@ -46,7 +51,16 @@ home_players AS (
             ELSE NULL 
         END AS ASSISTS_ARRAY,
         TRY_CAST(player.value:MinutesPlayed::STRING AS FLOAT) AS MINUTES_PLAYED,
-        'home' AS PLAYING_AS
+        'home' AS PLAYING_AS,
+        -- Adding Player Status Logic
+        CASE 
+            WHEN STARTED_GAME = TRUE AND WAS_SUBSTITUTED = FALSE THEN 'Played Full Game'
+            WHEN STARTED_GAME = TRUE AND WAS_SUBSTITUTED = TRUE THEN 'Played Subbed Off'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = TRUE AND WAS_SUBSTITUTED = TRUE THEN 'Played Subbed On and Subbed Off'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = TRUE AND WAS_SUBSTITUTED = FALSE THEN 'Played Subbed On'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = FALSE THEN 'Did Not Play'
+            ELSE 'Unknown Status'
+        END AS PLAYER_STATUS
     FROM match_data m,
     LATERAL FLATTEN(input => m.match_value:home_team.players) AS player
 ),
@@ -56,10 +70,14 @@ away_players AS (
         player.key::STRING AS PLAYER_NAME,
         m.MATCH_ID,
         m.match_value:away_team.name::STRING AS TEAM_NAME,
-        TRY_CAST(player.value:ShirtNumber::STRING AS FLOAT) AS TEAM_NUMBER,
-        TRY_CAST(player.value:StartedGame::STRING AS BOOLEAN) AS STARTED_GAME,
+        player.value:ShirtNumber::STRING AS TEAM_NUMBER,
+        CAST(REPLACE(player.value:ShirtNumber, ',', '') AS INT ) AS TEAM_NUMBER1,       
+        TRY_CAST(player.value:WasStarter::STRING AS BOOLEAN) AS STARTED_GAME,
         TRY_CAST(player.value:WasSubstituted::STRING AS BOOLEAN) AS WAS_SUBSTITUTED,
+        TRY_CAST(player.value:WasIntroduced::STRING AS BOOLEAN) AS Was_Introduced,
+        TRY_CAST(player.value:is_captain::STRING AS BOOLEAN) AS is_captain,
         player.value:ReplacedBy::STRING AS REPLACED_BY,
+        player.value:SubstitutionTime::STRING AS SubstitutionTime,
         TRY_CAST(player.value:YellowCards::STRING AS STRING) AS YELLOW_CARDS,
         CASE 
             WHEN IS_ARRAY(player.value:YellowCardMinutes) 
@@ -91,7 +109,16 @@ away_players AS (
             ELSE NULL 
         END AS ASSISTS_ARRAY,
         TRY_CAST(player.value:MinutesPlayed::STRING AS FLOAT) AS MINUTES_PLAYED,
-        'away' AS PLAYING_AS
+        'away' AS PLAYING_AS,
+        -- Adding Player Status Logic
+        CASE 
+            WHEN STARTED_GAME = TRUE AND WAS_SUBSTITUTED = FALSE THEN 'Played Full Game'
+            WHEN STARTED_GAME = TRUE AND WAS_SUBSTITUTED = TRUE THEN 'Played Subbed Off'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = TRUE AND WAS_SUBSTITUTED = TRUE THEN 'Played Subbed On and Subbed Off'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = TRUE AND WAS_SUBSTITUTED = FALSE THEN 'Played Subbed On'
+            WHEN STARTED_GAME = FALSE AND WAS_INTRODUCED = FALSE THEN 'Did Not Play'
+            ELSE 'Unknown Status'
+        END AS PLAYER_STATUS
     FROM match_data m,
     LATERAL FLATTEN(input => m.match_value:away_team.players) AS player
 )

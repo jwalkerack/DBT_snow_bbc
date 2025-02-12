@@ -57,3 +57,21 @@ models:
         description: "Team the player belongs to."
       - name: team_number
         description: "Player's shirt number."
+  - name: dim_match
+    description: >
+      This dimension table contains a unique list of matches with a surrogate 
+      `game_id` generated using `ROW_NUMBER()`. It serves as a primary reference 
+      for match-related data in fact tables.
+
+    columns:
+      - name: game_id
+        description: "Surrogate key for each match, generated using ROW_NUMBER()."
+        tests:
+          - not_null
+          - unique  # Ensures no duplicate matches exist.
+
+      - name: bbc_id
+        description: "Original match identifier from the `match_results` source."
+        tests:
+          - not_null
+          - unique  # Ensures each match is distinct.

@@ -23,4 +23,4 @@ SELECT
     venue,  -- Venue where the match was played
     attendance  -- Number of attendees at the match
 FROM {{ ref('stg_match_results') }}
-WHERE was_game_postponed = FALSE  -- Only include matches that were not postponed
+WHERE was_game_postponed = True  -- Only include matches that were not postponed

@@ -1,89 +1,64 @@
-{{ config(
-    materialized='table'
-) }}
+{{ config(materialized='table') }}
 
-WITH players_rolled AS (
-    SELECT 
-        p.player_id,
-        p.minutes_played,
-        p.yellow_cards,
-        p.red_cards,
-        p.goals,
-        p.assists,
-        p.started_game,
-        p.was_subbed,
-        'Home' AS playedAt,
-        mh.home_team_id AS team_id,
-        p.match_id
-    FROM {{ ref('fact_player_performance') }} p
-    RIGHT JOIN {{ ref('fact_match') }} mh
-        ON mh.match_id = p.match_id AND p.team_id = mh.home_team_id
-
-    UNION ALL
-
-    SELECT 
-        p.player_id,
-        p.minutes_played,
-        p.yellow_cards,
-        p.red_cards,
-        p.goals,
-        p.assists,
-        p.started_game,
-        p.was_subbed,
-        'Away' AS playedAt,
-        ma.away_team_id AS team_id,
-        p.match_id
-    FROM {{ ref('fact_player_performance') }} p
-    RIGHT JOIN {{ ref('fact_match') }} ma
-        ON ma.match_id = p.match_id AND p.team_id = ma.away_team_id
-),
-
-players_that_did_get_on AS (
-    SELECT * 
-    FROM players_rolled 
-    WHERE minutes_played > 0
-),
-
-player_aggregates AS (
-    SELECT 
+WITH player_aggregates AS (
+    SELECT
         player_id,
-        team_id,
-        COUNT(*) AS total_games_played,
-        SUM(CASE WHEN started_game = TRUE THEN 1 ELSE 0 END) AS total_games_started,
-        SUM(CASE WHEN started_game = TRUE AND was_subbed = TRUE THEN 1 ELSE 0 END) AS total_games_subbed_off,
-        SUM(CASE WHEN started_game = FALSE AND minutes_played > 0 THEN 1 ELSE 0 END) AS total_games_subbed_on,
-        SUM(minutes_played) AS total_minutes,
-        SUM(CASE WHEN started_game = TRUE THEN minutes_played ELSE 0 END) AS total_minutes_as_starter,
-        SUM(CASE WHEN started_game = FALSE THEN minutes_played ELSE 0 END) AS total_minutes_as_sub,
-        ROUND(AVG(minutes_played), 2) AS avg_minutes,
-        ROUND(AVG(CASE WHEN started_game = TRUE THEN minutes_played ELSE NULL END), 2) AS avg_minutes_as_started,
-        ROUND(AVG(CASE WHEN started_game = FALSE THEN minutes_played ELSE NULL END), 2) AS avg_minutes_as_sub,
-        SUM(goals) AS total_goals,
-        SUM(assists) AS total_assists,
-        SUM(yellow_cards) AS total_yellow_cards,
-        SUM(red_cards) AS total_red_cards,
-        ROUND(COALESCE(SUM(minutes_played) / NULLIF(SUM(goals), 0), 0), 2) AS minutes_per_goal
-    FROM players_that_did_get_on
-    GROUP BY player_id, team_id
-),
+        TEAM_ID,
 
-home_away_agg AS (
-    SELECT 
-        player_id,
-        SUM(CASE WHEN playedAt = 'Home' THEN 1 ELSE 0 END) AS total_games_home,
-        SUM(CASE WHEN playedAt = 'Away' THEN 1 ELSE 0 END) AS total_games_away,
-        SUM(CASE WHEN playedAt = 'Home' THEN minutes_played ELSE 0 END) AS total_minutes_home,
-        SUM(CASE WHEN playedAt = 'Away' THEN minutes_played ELSE 0 END) AS total_minutes_away
-    FROM players_that_did_get_on
-    GROUP BY player_id
+        -- Total Metrics
+        SUM(YellowCards) AS Total_YellowCards,
+        SUM(RedCards) AS Total_RedCards,
+        SUM(Goals) AS Total_Goals,
+        SUM(Assists) AS Total_Assists,
+        SUM(MinutesPlayed) AS Total_MinutesPlayed,
+        COUNT(DISTINCT GAME_ID) AS Total_Squads_Made,  -- Renamed from Total_Matches_Played
+
+        -- New Metric: Total Match Involvements (Starter or Sub)
+        COUNT(DISTINCT CASE 
+            WHEN player_matchRole IN ('Starter', 'Sub') THEN GAME_ID 
+            ELSE NULL 
+        END) AS Total_Match_Involvements,
+
+        -- Role-Based Subtotals: When Starter
+        SUM(CASE WHEN player_matchRole = 'Starter' THEN YellowCards ELSE 0 END) AS YellowCards_When_Started,
+        SUM(CASE WHEN player_matchRole = 'Starter' THEN RedCards ELSE 0 END) AS RedCards_When_Started,
+        SUM(CASE WHEN player_matchRole = 'Starter' THEN Goals ELSE 0 END) AS Goals_When_Started,
+        SUM(CASE WHEN player_matchRole = 'Starter' THEN Assists ELSE 0 END) AS Assists_When_Started,
+        SUM(CASE WHEN player_matchRole = 'Starter' THEN MinutesPlayed ELSE 0 END) AS MinutesPlayed_When_Started,
+        COUNT(DISTINCT CASE WHEN player_matchRole = 'Starter' THEN GAME_ID ELSE NULL END) AS Matches_Started,
+
+        -- Role-Based Subtotals: When Sub
+        SUM(CASE WHEN player_matchRole = 'Sub' THEN YellowCards ELSE 0 END) AS YellowCards_When_Sub,
+        SUM(CASE WHEN player_matchRole = 'Sub' THEN RedCards ELSE 0 END) AS RedCards_When_Sub,
+        SUM(CASE WHEN player_matchRole = 'Sub' THEN Goals ELSE 0 END) AS Goals_When_Sub,
+        SUM(CASE WHEN player_matchRole = 'Sub' THEN Assists ELSE 0 END) AS Assists_When_Sub,
+        SUM(CASE WHEN player_matchRole = 'Sub' THEN MinutesPlayed ELSE 0 END) AS MinutesPlayed_When_Sub,
+        COUNT(DISTINCT CASE WHEN player_matchRole = 'Sub' THEN GAME_ID ELSE NULL END) AS Matches_As_Sub,
+
+        -- Role-Based Subtotals: When Squad (Did Not Play)
+        SUM(CASE WHEN player_matchRole = 'Squad' THEN YellowCards ELSE 0 END) AS YellowCards_When_Squad,
+        SUM(CASE WHEN player_matchRole = 'Squad' THEN RedCards ELSE 0 END) AS RedCards_When_Squad,
+        SUM(CASE WHEN player_matchRole = 'Squad' THEN Goals ELSE 0 END) AS Goals_When_Squad,
+        SUM(CASE WHEN player_matchRole = 'Squad' THEN Assists ELSE 0 END) AS Assists_When_Squad,
+        SUM(CASE WHEN player_matchRole = 'Squad' THEN MinutesPlayed ELSE 0 END) AS MinutesPlayed_When_Squad,
+        COUNT(DISTINCT CASE WHEN player_matchRole = 'Squad' THEN GAME_ID ELSE NULL END) AS Matches_As_Squad,
+
+        -- Efficiency Metrics
+        (SUM(Goals) * 90.0) / NULLIF(SUM(MinutesPlayed), 0) AS Goals_Per_90,
+        (SUM(Assists) * 90.0) / NULLIF(SUM(MinutesPlayed), 0) AS Assists_Per_90,
+        ((SUM(Goals) + SUM(Assists)) * 90.0) / NULLIF(SUM(MinutesPlayed), 0) AS Goal_Contribution_Per_90,
+        ((SUM(YellowCards) + SUM(RedCards)) * 90.0) / NULLIF(SUM(MinutesPlayed), 0) AS Cards_Per_90,
+
+        -- Impact Metrics
+        (SUM(CASE WHEN player_matchRole = 'Starter' THEN Goals ELSE 0 END) * 100.0) / NULLIF(SUM(Goals), 0) AS Pct_Goals_When_Started,
+        (SUM(CASE WHEN player_matchRole = 'Sub' THEN Goals ELSE 0 END) * 100.0) / NULLIF(SUM(Goals), 0) AS Pct_Goals_When_Sub,
+        (SUM(CASE WHEN player_matchRole = 'Squad' THEN Goals ELSE 0 END) * 100.0) / NULLIF(SUM(Goals), 0) AS Pct_Goals_When_Squad
+
+    FROM {{ ref('fact_player_match') }}
+    GROUP BY player_id, TEAM_ID
 )
 
-SELECT 
-    p.*,
-    ha.total_games_home,
-    ha.total_games_away,
-    ha.total_minutes_home,
-    ha.total_minutes_away
-FROM player_aggregates p
-JOIN home_away_agg ha ON p.player_id = ha.player_id
-ORDER BY p.total_games_played DESC
+SELECT DM.Player_name , PA.* , DT.TEAM_NAME , DT.league_name , DT.Country_name , DT.SHORT_NAME,
+FROM player_aggregates PA
+Left Join {{ ref('dim_players') }} DM on PA.player_id = DM.player_id
+Left Join {{ ref('dim_teams') }} DT on PA.TEAM_id = DT.TEAM_ID
