@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: raw_match
-    database: bbc_football_dev # Hardcoded database name
-    schema: results_dev # Hardcoded schema name
+    database: RAW_FOOTBALL # Hardcoded database name
+    schema: "{{ env_var('DBT_SOURCE_SCHEMA', 'BBC_DEV') }}"
     tables:
       - name: football_data_json
         description: "Raw JSON data loaded from external sources"
