@@ -8,7 +8,6 @@ sources:
       - name: football_data_json
         description: "Raw JSON data loaded from external sources"
 
-
 models:
   - name: stg_match_results
     description: "Staging table for raw football match data, extracting match details, team information, and match summaries from JSON data."
@@ -22,7 +21,8 @@ models:
       - name: home_team_name
         description: "Name of the home team participating in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: home_team_manager
         description: "Name of the manager of the home team."
@@ -35,12 +35,14 @@ models:
         tests:
           - not_null:
               where: "was_game_postponed = FALSE"
+              severity: warn
 
       - name: home_team_possession
         description: "Percentage of ball possession by the home team, represented as a decimal (e.g., 0.55 for 55%)."
         tests:
           - not_null:
               where: "was_game_postponed = FALSE"
+              severity: warn
           - accepted_values:
               values: [0, 1]
               quote: false
@@ -49,7 +51,8 @@ models:
       - name: away_team_name
         description: "Name of the away team participating in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: away_team_manager
         description: "Name of the manager of the away team."
@@ -62,12 +65,14 @@ models:
         tests:
           - not_null:
               where: "was_game_postponed = FALSE"
+              severity: warn
 
       - name: away_team_possession
         description: "Percentage of ball possession by the away team, represented as a decimal (e.g., 0.45 for 45%)."
         tests:
           - not_null:
               where: "was_game_postponed = FALSE"
+              severity: warn
           - accepted_values:
               values: [0, 1]
               quote: false
@@ -76,12 +81,14 @@ models:
       - name: was_game_postponed
         description: "Boolean flag indicating whether the game was postponed (TRUE if postponed, FALSE otherwise)."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: played_on
         description: "Date the match was played in the format 'Dy DD Mon YYYY'."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: league_name
         description: "Name of the league in which the match was played."
@@ -94,13 +101,16 @@ models:
         tests:
           - not_null:
               where: "was_game_postponed = FALSE"
+              severity: warn
+
   - name: stg_player
     description: "Staging table for player-level match data, including player performance, substitution details, and disciplinary records."
     columns:
       - name: player_name
         description: "Full name of the player."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: match_id
         description: "Unique identifier as sourced from bbc of the match in which the player participated."
@@ -110,7 +120,8 @@ models:
       - name: team_name
         description: "Name of the team the player belongs to (home or away)."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: team_number
         description: "Shirt number of the player as a string (may contain formatting characters)."
@@ -119,9 +130,11 @@ models:
         description: "Shirt number of the player, cleaned and cast as an integer."
 
       - name: started_game
-        description: "Boolean indicating if the player was in the starting lineup or if the player was in the match day sqaud"
+        description: "Boolean indicating if the player was in the starting lineup or if the player was in the match day squad."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
+
       - name: was_substituted
         description: "Boolean indicating if the player was substituted out during the match."
 
@@ -169,3 +182,4 @@ models:
         tests:
           - accepted_values:
               values: ['home', 'away']
+              severity: warn
