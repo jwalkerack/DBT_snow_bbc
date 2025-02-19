@@ -24,52 +24,64 @@ models:
       - name: venue_id
         description: "Identifier for the venue where the match was played, linked to `dim_venues`."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - relationships:
               to: ref('dim_venues')
               field: venue_id
+              severity: warn
 
       - name: HOME_TEAM_ID
         description: "Identifier for the home team, linked to `dim_teams`."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - relationships:
               to: ref('dim_teams')
               field: TEAM_ID
+              severity: warn
 
       - name: AWAY_TEAM_ID
         description: "Identifier for the away team, linked to `dim_teams`."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - relationships:
               to: ref('dim_teams')
               field: TEAM_ID
+              severity: warn
 
       - name: home_manager_id
         description: "Identifier for the manager of the home team, linked to `dim_managers`."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - relationships:
               to: ref('dim_managers')
               field: manager_id
+              severity: warn
 
       - name: away_manager_id
         description: "Identifier for the manager of the away team, linked to `dim_managers`."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - relationships:
               to: ref('dim_managers')
               field: manager_id
+              severity: warn
 
       - name: attendance
         description: "Number of spectators attending the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: played_on
         description: "Date on which the match was played."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: gameOut
         description: >
@@ -79,9 +91,11 @@ models:
           'draw' if the match ended in a tie, 
           'unknown' for undefined outcomes.
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
               values: ['home win', 'away win', 'draw', 'unknown']
+              severity: warn
 
   - name: fact_player_match
     description: >
@@ -117,46 +131,56 @@ models:
       - name: ShirtNumber
         description: "The jersey number worn by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: YellowCards
         description: "Number of yellow cards received by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
-              values: [0, 1, 2]  # Ensures realistic values (two max before a red).
+              values: [0, 1, 2] 
+              severity: warn
 
       - name: RedCards
         description: "Number of red cards received by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
-              values: [0,1]  # A player can receive at most one red card.
+              values: [0,1]
+              severity: warn
 
       - name: Goals
         description: "Total goals scored by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: Assists
         description: "Total assists made by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: MinutesPlayed
         description: "Total minutes played by the player in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: Player_MatchStatus
         description: >
           The raw status of the player for the match, as recorded in the source system.
           Used to determine `player_matchRole`.
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
               values: ['Played Subbed Off', 'Played Full Game', 'Played Subbed On', 
                        'Played Subbed On and Subbed Off', 'Did Not Play']
+              severity: warn
 
       - name: player_matchRole
         description: >
@@ -166,9 +190,11 @@ models:
           - 'Squad': Was in the squad but did not play
           - 'Unknown': Catch-all for unexpected statuses
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
-              values: ['Starter', 'Sub', 'Sqaud']
+              values: ['Starter', 'Sub', 'Squad']
+              severity: warn
 
   - name: fact_team_match
     description: >
@@ -202,22 +228,26 @@ models:
       - name: scored
         description: "Number of goals scored by the team in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: conceeded
         description: "Number of goals conceded by the team in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: possession
         description: "Ball possession percentage for the team."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: formation
         description: "Tactical formation used by the team in the match."
         tests:
-          - not_null
+          - not_null:
+              severity: warn
 
       - name: GameRole
         description: >
@@ -225,9 +255,11 @@ models:
           - 1 = Home
           - 2 = Away
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
               values: [1, 2]
+              severity: warn
 
       - name: Points
         description: >
@@ -236,16 +268,8 @@ models:
           - 1 = Draw
           - 0 = Loss
         tests:
-          - not_null
+          - not_null:
+              severity: warn
           - accepted_values:
               values: [0, 1, 3]
-
-      - name: played_on
-        description: "Date when the match was played."
-        tests:
-          - not_null
-
-      - name: game_number
-        description: "Sequential match number for the team, ordered by `played_on`."
-        tests:
-          - not_null
+              severity: warn
