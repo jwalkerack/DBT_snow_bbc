@@ -1,24 +1,20 @@
-DBT Repository - Data Transformation Layer (3rd Repo in a 4-Repo End-to-End Project)
-Project Overview
-This repository is part of a 4-repository end-to-end data pipeline project. It specifically serves as the third stage in the pipeline, focusing on data transformation and modeling using DBT (Data Build Tool).
+DBT Repository - Data Transformation Layer
 
-Role of this Repository in the Data Pipeline
-Receives JSON-formatted data from S3, which was processed in the previous stage (AWS Lambda)
-Transforms raw data into structured tables, including:
-Fact Tables – Transactional data, events, or key business actions
-Dimension Tables – Master data (e.g., customers, products, dates)
-Aggregations – Precomputed metrics for performance optimization
-Implements Data Quality Tests to ensure:
-Data integrity (e.g., uniqueness, non-null constraints)
-Referential integrity (valid relationships between dimensions & facts)
-Business rule validations
-Uses DBT models, macros, and tests to create a scalable and maintainable transformation layer.
-Technology Stack
-DBT (Data Build Tool): For SQL-based transformations and data modeling
-AWS S3: Source for raw JSON data
-AWS Lambda: Previous stage processing data before it reaches DBT
-Redshift / Snowflake / BigQuery (or any DWH): Target data warehouse for structured tables
+(3rd Repo in a 4-Repo End-to-End Project)
 
-Next Step in the Pipeline
-The 4th repository holds the Streamlit Web Application can is found here 
+This is the third repo of four as part of an end-to-end data project that sources data from the BBC Sport website and transforms it into an analytical database. This database is then used by a Streamlit application to build interactive workflows for users to interact with the data.
+
+The DBT section focuses on transformation instructions that take the raw JSON data, which has been sourced into Snowflake from S3, and transforms it into several models, including:
+
+Staging
+
+Dimension
+
+Fact
+
+Aggregations
+
+During this step, data quality elements are added to provide insights into areas of concern. The code runs via DBT Cloud, with a production job set up linking to the production environment.
+
+The next step in the project is the Streamlit application. Its repository can be found here:
 
